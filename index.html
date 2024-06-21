@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEET Score Calculator</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .container {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="number"] {
+      width: calc(50% - 10px);
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .blurred {
+      filter: blur(5px);
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+    }
+
+    /* Bar Chart */
+    #barChart {
+      margin-top: 20px;
+      width: 400px;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="mainContainer">
+    <h1>NEET Score Calculator</h1>
+    <div>
+      <label for="physicsCorrect">Physics :</label>
+      <input type="number" id="physicsCorrect" placeholder="Correct">
+      <input type="number" id="physicsIncorrect" placeholder="Incorrect"><br>
+      
+      <label for="chemistryCorrect">Chemistry :</label>
+      <input type="number" id="chemistryCorrect" placeholder="Correct">
+      <input type="number" id="chemistryIncorrect" placeholder="Incorrect"><br>
+
+   <label for="botanyCorrect">Botany :</label>
+      <input type="number" id="botanyCorrect" placeholder="Correct">
+      <input type="number" id="botanyIncorrect" placeholder="Incorrect"><br>
+      
+      <label for="zoologyCorrect">Zoology :</label>
+      <input type="number" id="zoologyCorrect" placeholder="Correct">
+      <input type="number" id="zoologyIncorrect" placeholder="Incorrect"><br>
+      
+      
+      <button onclick="calculateNEET()">Calculate</button>
+    </div>
+  </div>
+  
+  <div id="resultModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>NEET Score Results:</h2>
+      <table>
+        <tr>
+          <th>Subject</th>
+          <th>Marks</th>
+          <th>Percentage</th>
+        </tr>
+        <tr>
+          <td>Physics</td>
+          <td id="physicsMarks"></td>
+          <td id="physicsPercentage"></td>
+        </tr>
+        <tr>
+          <td>Chemistry</td>
+          <td id="chemistryMarks"></td>
+          <td id="chemistryPercentage"></td>
+        </tr>
+        <tr>
+          <td>Zoology</td>
+          <td id="zoologyMarks"></td>
+          <td id="zoologyPercentage"></td>
+        </tr>
+        <tr>
+          <td>Botany</td>
+          <td id="botanyMarks"></td>
+          <td id="botanyPercentage"></td>
+        </tr>
+        <tr>
+          <th>Total</th>
+          <th id="totalMarks"></th>
+          <th id="totalPercentage"></th>
+        </tr>
+      </table>
+      <div id="barChart"></div>
+      <p id="customMessage" style="font-weight: bold; margin-top: 10px;"></p>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script>
+    function calculateNEET() {
+      // Retrieve input values
+      let physicsCorrect = parseInt(document.getElementById('physicsCorrect').value) || 0;
+      let physicsIncorrect = parseInt(document.getElementById('physicsIncorrect').value) || 0;
+      let chemistryCorrect = parseInt(document.getElementById('chemistryCorrect').value) || 0;
+      let chemistryIncorrect = parseInt(document.getElementById('chemistryIncorrect').value) || 0;
+      let zoologyCorrect = parseInt(document.getElementById('zoologyCorrect').value) || 0;
+      let zoologyIncorrect = parseInt(document.getElementById('zoologyIncorrect').value) || 0;
+      let botanyCorrect = parseInt(document.getElementById('botanyCorrect').value) || 0;
+      let botanyIncorrect = parseInt(document.getElementById('botanyIncorrect').value) || 0;
+      
+      // Calculate marks
+      let physicsMarks = (physicsCorrect * 4) - (physicsIncorrect * 1);
+      let chemistryMarks = (chemistryCorrect * 4) - (chemistryIncorrect * 1);
+      let zoologyMarks = (zoologyCorrect * 4) - (zoologyIncorrect * 1);
+      let botanyMarks = (botanyCorrect * 4) - (botanyIncorrect * 1);
+      
+      // Calculate percentages
+      let totalMarks = physicsMarks + chemistryMarks + zoologyMarks + botanyMarks;
+      let totalPercentage = (totalMarks / 720) * 100;
+      let physicsPercentage = (physicsMarks / 180) * 100;
+      let chemistryPercentage = (chemistryMarks / 180) * 100;
+      let zoologyPercentage = (zoologyMarks / 180) * 100;
+      let botanyPercentage = (botanyMarks / 180) * 100;
+
+      // Custom message based on total marks
+      let customMessage = "";
+      if (totalMarks < 400) {
+        customMessage = "Poor";
+      } else if (totalMarks >= 400 && totalMarks < 500) {
+        customMessage = "Need Improvement";
+      } else if (totalMarks >= 500 && totalMarks < 590) {
+        customMessage = "Vaibhav, push more";
+      } else if (totalMarks >= 590 && totalMarks < 650) {
+        customMessage = "Good Vaibhav! But need improvement";
+      } else if (totalMarks >= 650) {
+        customMessage = "Great! Vaibhav, you are doing GAJAB!";
+      }
+
+      // Display results in modal
+      document.getElementById('physicsMarks').textContent = physicsMarks;
+      document.getElementById('chemistryMarks').textContent = chemistryMarks;
+      document.getElementById('zoologyMarks').textContent = zoologyMarks;
+      document.getElementById('botanyMarks').textContent = botanyMarks;
+      document.getElementById('totalMarks').textContent = totalMarks;
+      
+      document.getElementById('physicsPercentage').textContent = physicsPercentage.toFixed(2) + '%';
+      document.getElementById('chemistryPercentage').textContent = chemistryPercentage.toFixed(2) + '%';
+      document.getElementById('zoologyPercentage').textContent = zoologyPercentage.toFixed(2) + '%';
+      document.getElementById('botanyPercentage').textContent = botanyPercentage.toFixed(2) + '%';
+      document.getElementById('totalPercentage').textContent = totalPercentage.toFixed(2) + '%';
+      document.getElementById('customMessage').textContent = customMessage;
+      
+      // Draw Bar Chart
+      drawBarChart(physicsMarks, chemistryMarks, zoologyMarks, botanyMarks);
+      
+      // Show modal
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function drawBarChart(physicsMarks, chemistryMarks, zoologyMarks, botanyMarks) {
+      let options = {
+        series: [
+          {
+            name: 'Marks',
+            data: [physicsMarks, chemistryMarks, zoologyMarks, botanyMarks]
+          }
+        ],
+        chart: {
+          type: 'bar',
+          height: 300,
+          width: '100%',
+          foreColor: '#333',
+          toolbar: {
+            show: false
+          }
+        },
+        plotOptions: {
+          bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+          },
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          show: true,
+          width: 2,
+          colors: ['transparent']
+        },
+        xaxis: {
+          categories: ['Physics', 'Chemistry', 'Zoology', 'Botany'],
+        },
+        yaxis: {
+          title: {
+            text: 'Marks'
+          }
+        },
+        colors: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
+        grid: {
+          borderColor: '#f2f2f2',
+        },
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: {
+                height: 250,
+              }
+            }
+          }
+        ]
+      };
+
+      let chart = new ApexCharts(document.querySelector("#barChart"), options);
+      chart.render();
+    }
+
+    function closeModal() {
+      document.getElementById('resultModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
